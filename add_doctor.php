@@ -76,7 +76,7 @@ if (!isset($_SESSION['admin_id'])) {
                     <li><a href="add_order.php"><i class="fa fa-cart-plus"></i>Add Order</a></li>
                 </ul>
             </li>
-            <li><a href="logout.php"><i class="fa fa-sign-out"></i>Logout</a></li>
+            <li><a href="logout.php" onclick="return confirm('Are you sure you want to logout?')"><i class="fa fa-sign-out"></i>Logout</a></li>
             
         </ul>
     </nav>

@@ -77,7 +77,7 @@ if (!isset($_SESSION['admin_id'])) {
                     </ul>
                 </li>
             </ul>
-            <li><a href="logout.php"><i class="fa fa-sign-out"></i>Logout</a></li>
+            <li><a href="logout.php" onclick="return confirm('Are you sure you want to logout?')"><i class="fa fa-sign-out"></i>Logout</a></li>
             
         </nav>
     </aside>
