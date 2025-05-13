@@ -1,5 +1,68 @@
-<html lang="en">
 
+<?php
+include("connect.php");
+if (isset($_POST['download'])) {
+    // 1. Sanitize input
+    $search = mysqli_real_escape_string($con, $_POST['search_query'] ?? '');
+
+    // 2. Build your query (same as on‐page search)
+    $sql = "SELECT 
+              p.Patient_names,
+              p.Telephone,
+              p.DOB,
+              p.Gender,
+              p.district,
+              p.age,
+              b.item_name,
+              b.quantity,
+              b.bill_date,
+              d.Doctors_Names
+            FROM patient p
+            JOIN billing b ON p.Patient_id = b.Patient_id
+            JOIN doctors d ON b.Doctor_id = d.Doctor_id
+            WHERE p.Patient_names LIKE '%$search%'
+               OR p.district     LIKE '%$search%'
+               OR p.Patient_id   LIKE '%$search%'
+               OR p.age          LIKE '%$search%'
+               OR p.Telephone    LIKE '%$search%'
+               OR b.item_name    LIKE '%$search%'
+               OR d.Doctors_Names LIKE '%$search%'
+               OR b.quantity     LIKE '%$search%'
+            ORDER BY p.Patient_names ASC";
+    $result = mysqli_query($con, $sql);
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="Patient_bills_report.csv"');
+    $out = fopen('php://output', 'w');
+    fputcsv($out, [
+        'Patient Name',
+        'Telephone',
+        'Date of Birth',
+        'Gender',
+        'District',
+        'Age',
+        'Drug',
+        'Quantity',
+        'Bill Date',
+        'Doctor'
+    ]);
+
+    // 6. Loop through results and write rows
+    while ($row = mysqli_fetch_assoc($result)) {
+        $clean = array_map(function($val) {
+            if (is_numeric($val)) {
+                return (int)$val;
+            }
+            return strip_tags($val);
+        }, $row);
+        fputcsv($out, array_values($clean));
+    }
+
+    fclose($out);
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,7 +70,6 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
 </head>
-
 <body>
     <div class="humberg">
         <i class="fa fa-bars"></i>
@@ -70,19 +132,13 @@
         </nav>
     </aside>
     <main class="main-content">
-<!-- Search and generate report -->
-<form action="" class="search-form" method="post">
-  <input type="search" name="search_query" class="search" placeholder="Search..." autocomplete="off">
-  <input type="submit" value="Search" class="search-btn" name="search">
-</form>
-
-
-
-<!-- end of Search -->
-
-
-
-    
+        <!-- Search and Generate Report -->
+        <form action="" class="search-form" method="post">
+          <input type="search" name="search_query" class="search" placeholder="Search..." autocomplete="off">
+          <input type="submit" value="Search" class="search-btn" name="search">
+          <input type="submit" value="Generate Report" class="search-btn" name="download">
+        </form>
+        
         <h1>Dashboard</h1>
         <div class="stats-container">
             <div class="stat-card">
@@ -165,85 +221,75 @@
         </div>
 
         <?php
-include("connect.php");
+        if (isset($_POST['search'])) {
+            $search = mysqli_real_escape_string($con, $_POST['search_query']);
+            $query = "SELECT 
+                        p.Patient_names,
+                        p.Telephone,
+                        p.DOB,
+                        p.Gender,
+                        p.district,
+                        p.age,
+                        b.item_name,
+                        b.quantity,
+                        b.bill_date,
+                        d.Doctors_Names
+                      FROM patient p
+                      INNER JOIN billing b ON p.Patient_id = b.Patient_id
+                      INNER JOIN doctors d ON b.Doctor_id = d.Doctor_id
+                      WHERE p.Patient_names LIKE '%$search%' 
+                         OR p.district LIKE '%$search%' 
+                         OR p.Patient_id LIKE '%$search%'
+                         OR p.age LIKE '%$search%'
+                         OR p.Telephone LIKE '%$search%'
+                         OR b.item_name LIKE '%$search%'
+                         OR d.Doctors_Names LIKE '%$search%'
+                         OR b.quantity LIKE '%$search%'
+                      ORDER BY p.Patient_names ASC";
+            $result = mysqli_query($con, $query);
 
-if (isset($_POST['search'])) {
-    // Get and sanitize search input
-    $search = mysqli_real_escape_string($con, $_POST['search_query']);
-    
-    // Build the search query with table joins
-    $query = "SELECT 
-            p.Patient_names,
-            p.Telephone,
-            p.DOB,
-            p.Gender,
-            p.district,
-            p.age,
-            b.item_name,
-            b.quantity,
-            b.bill_date,
-            d.Doctors_Names
-          FROM patient p
-          INNER JOIN billing b ON p.Patient_id = b.Patient_id
-          INNER JOIN doctors d ON b.Doctor_id = d.Doctor_id
-          WHERE p.Patient_names LIKE '%$search%' 
-             OR p.district LIKE '%$search%' 
-             OR p.Patient_id LIKE '%$search%'
-             OR p.age LIKE '%$search%'
-             OR p.Telephone LIKE '%$search%'
-             OR b.item_name LIKE '%$search%'
-             OR d.Doctors_Names LIKE '%$search%'
-             OR b.quantity LIKE '%$search%' ORDER BY p.Patient_names ASC";
-    
-    $result = mysqli_query($con, $query);
-
-    // Display search results
-    if (mysqli_num_rows($result) > 0) {
-        echo '<div class="search-results">';
-        echo '<h3 style="margin: 30px 0 15px 0;">Search Results:</h3>';
-        echo '<table class="result-table">';
-        echo '<thead><tr>
-                <th>Patient Name</th>
-                <th>Telephone</th>
-                <th>Date of Birth</th>
-                <th>Gender</th>
-                <th>District</th>
-                <th>Age</th>
-                <th>Drug</th>
-                <th>Quantity</th>
-                <th>Bill Date</th>
-                <th>Doctor</th>
-              </tr></thead>';
-        echo '<tbody>';
-        
-        while ($row = mysqli_fetch_assoc($result)) {
-            echo '<tr>';
-            echo '<td>' .$row['Patient_names'] . '</td>';
-            echo '<td>' . $row['Telephone'] . '</td>';
-            echo '<td>' .$row['DOB'] . '</td>';
-            echo '<td>' .$row['Gender']. '</td>';
-            echo '<td>' .$row['district'] . '</td>';
-            echo '<td>' .$row['age'] . '</td>';
-            echo '<td>' .$row['item_name'] . '</td>';
-            echo '<td>' .$row['quantity'] . '</td>';
-            echo '<td>' . $row['bill_date'] . '</td>';
-            echo '<td>' .$row['Doctors_Names'] . '</td>';
-            echo '</tr>';
+            if (mysqli_num_rows($result) > 0) {
+                echo '<div class="search-results">';
+                echo '<h3 style="margin:30px 0 15px;">Search Results:</h3>';
+                echo '<table class="result-table">';
+                echo '<thead><tr>
+                        <th>Patient Name</th>
+                        <th>Telephone</th>
+                        <th>Date of Birth</th>
+                        <th>Gender</th>
+                        <th>District</th>
+                        <th>Age</th>
+                        <th>Drug</th>
+                        <th>Quantity</th>
+                        <th>Bill Date</th>
+                        <th>Doctor</th>
+                      </tr></thead><tbody>';
+                
+                while ($row = mysqli_fetch_assoc($result)) {
+                    echo '<tr>';
+                    echo '<td>'.htmlspecialchars($row['Patient_names']).'</td>';
+                    echo '<td>'.htmlspecialchars($row['Telephone']).'</td>';
+                    echo '<td>'.htmlspecialchars($row['DOB']).'</td>';
+                    echo '<td>'.htmlspecialchars($row['Gender']).'</td>';
+                    echo '<td>'.htmlspecialchars($row['district']).'</td>';
+                    echo '<td>'.htmlspecialchars($row['age']).'</td>';
+                    echo '<td>'.htmlspecialchars($row['item_name']).'</td>';
+                    echo '<td>'.htmlspecialchars($row['quantity']).'</td>';
+                    echo '<td>'.htmlspecialchars($row['bill_date']).'</td>';
+                    echo '<td>'.htmlspecialchars($row['Doctors_Names']).'</td>';
+                    echo '</tr>';
+                }
+                
+                echo '</tbody></table></div>';
+            } else {
+                echo '<p style="background-color:red;color:white;padding:10px;margin:10px 0;">
+                        No results found for "'.htmlspecialchars($search).'" 😢
+                      </p>';
+            }
         }
-       
-        
-        
-        echo '</tbody></table></div>';
+        ?>
 
-    } else {
-        echo '<p style="background-color: red;color: white;padding: 10px;margin: 10px 0;">No results found for "'.htmlspecialchars($search).'" 😢😢😢</p>';
-    }
-}
-
-?>
     </main>
-
-   <script src="app.js"></script> 
+    <script src="app.js"></script>
 </body>
-
 </html>
