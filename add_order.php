@@ -1,3 +1,12 @@
+<?php
+session_start();
+
+// if no valid session, force login
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: login.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -68,6 +77,8 @@
                     </ul>
                 </li>
             </ul>
+            <li><a href="logout.php"><i class="fa fa-sign-out"></i>Logout</a></li>
+            
         </nav>
     </aside>
     <main class="main-content">

@@ -1,6 +1,14 @@
+<?php
+session_start();
+
+// if no valid session, force login
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: login.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -74,6 +82,7 @@
                         <li><a href="add_order.php"><i class="fa fa-cart-plus"></i>Add Order</a></li>
                     </ul>
                 </li>
+                <li><a href="logout.php"><i class="fa fa-sign-out"></i>Logout</a></li>
             </ul>
         </nav>
     </aside>

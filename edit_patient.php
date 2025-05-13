@@ -1,3 +1,14 @@
+<?php
+session_start();
+
+// if no valid session, force login
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: login.php");
+    exit;
+}
+?>
+
+
 <?php 
 if(isset($_GET["id"])){
     $id = $_GET["id"];
@@ -65,6 +76,7 @@ if(isset($_GET["id"])){
                         <li><a href="add_order.php"><i class="fa fa-cart-plus"></i>Add Order</a></li>
                     </ul>
                 </li>
+                <li><a href="logout.php"><i class="fa fa-sign-out"></i>Logout</a></li>
             </ul>
         </nav>
     </aside>

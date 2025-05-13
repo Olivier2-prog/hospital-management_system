@@ -73,11 +73,6 @@
     <main class="main-content">
         
     </main>
-
-
-
-
-
     <script src="app.js"></script>
 </body>
 

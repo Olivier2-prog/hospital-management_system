@@ -75,6 +75,7 @@
                     <li><a href="add_order.php"><i class="fa fa-cart-plus"></i>Add Order</a></li>
                 </ul>
             </li>
+            <li><a href="logout.php"><i class="fa fa-sign-out"></i>Logout</a></li>
         </ul>
     </nav>
 </aside>

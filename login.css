@@ -90,6 +90,10 @@
             background: #2980b9;
         }
 
+        .error-message{
+            margin: 10px 0;
+            color: red;
+        }
         /* Responsive Design */
         @media (max-width: 768px) {
             .container {
