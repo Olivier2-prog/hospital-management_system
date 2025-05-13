@@ -9,6 +9,7 @@ if (isset($_GET['id'])) {
     if ($result) {
        header("location:view_doctors.php");
     }
+
 }
 
 // Step 4: Close connection
