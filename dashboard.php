@@ -33,6 +33,11 @@ if (isset($_POST['download'])) {
     header('Content-Type: text/csv; charset=UTF-8');
     header('Content-Disposition: attachment; filename="Patient_bills_report.csv"');
     $out = fopen('php://output', 'w');
+    $title = "Search Report for \"" . ($search ?: 'All Records') . "\"";
+$subtitle = "Generated on " . date('Y-m-d H:i:s');
+fputcsv($out, [$title]);
+fputcsv($out, [$subtitle]);
+fputcsv($out, []);  
     fputcsv($out, [
         'Patient Name',
         'Telephone',
